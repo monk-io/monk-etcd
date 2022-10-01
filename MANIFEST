@@ -1,0 +1,2 @@
+REPO etcd
+LOAD etcd.yml stack.yml

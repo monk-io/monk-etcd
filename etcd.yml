@@ -1,0 +1,138 @@
+namespace: monk-etcd 
+
+
+etcd-common:
+  metadata:
+    defines: metadata
+    name: etcd
+    description: A distributed, reliable key-value store for the most critical data of a distributed system
+    website: https://etcd.io/
+    publisher: monk.io
+    icon: logo.png 
+  variables:
+    monk_ectd_ctl_api:
+      env: ETCDCTL_API
+      type: int
+      value: 3
+    monk_etcd_debug:
+      env: ETCD_DEBUG
+      type: bool
+      value: 1
+    monk_etcd1_host:
+      env: ETCD1_HOST
+      type: string
+      value: <- get-hostname("monk-etcd/etcd1", "monk-etcd1") split(".dns.podman") join("")
+    monk_etcd2_host:
+      env: ETCD2_HOST
+      type: string
+      value: <- get-hostname("monk-etcd/etcd2", "monk-etcd2") split(".dns.podman") join("")
+    monk_etcd3_host:
+      env: ETCD3_HOST
+      type: string
+      value: <- get-hostname("monk-etcd/etcd3", "monk-etcd3") split(".dns.podman") join("")
+    monk_etcd_initial_cluster:
+      env: ETCD_INITIAL_CLUSTER
+      type: string
+      value: <- `etcd1=http://${monk_etcd1_host}:2380,etcd2=http://${monk_etcd2_host}:2380,etcd3=http://${monk_etcd3_host}:2380`
+    monk_etcd_initial_cluster_state:
+      env: ETCD_INITIAL_CLUSTER_STATE
+      type: string
+      value: new
+    monk_etcd_initial_cluster_token:
+      env: ETCD_INITIAL_CLUSTER_TOKEN
+      type: string
+      value: etcd-cluster-1
+    volume_local:
+      type: string
+      value: <- `${monk-volume-path}/monk-hadoop`
+
+etcd1:
+  defines: runnable
+  inherits: ./etcd-common
+  variables:
+    monk_etcd_name:
+      env: ETCD_NAME
+      type: string
+      value: etcd1
+    monk_etcd_initial_advertise_peer_urls:
+      env: ETCD_INITIAL_ADVERTISE_PEER_URLS
+      type: string
+      value: <- `http://${monk_etcd1_host}:2380`
+    monk_etcd_listen_peer_urls:
+      env: ETCD_LISTEN_PEER_URLS
+      type: string
+      value: <- `http://0.0.0.0:2380`
+    monk_etcd_listen_client_urls:
+      env: ETCD_LISTEN_CLIENT_URLS
+      type: string
+      value: <- `http://0.0.0.0:2379`
+    monk_etcd_advertise_client_urls:
+      env: ETCD_ADVERTISE_CLIENT_URLS
+      type: string
+      value: <- `http://${monk_etcd1_host}:2379`
+  containers:
+    monk-etcd1:
+      ports:
+        - <- `0.0.0.0:${monk_etcd1_port}:2379`
+      image: gcr.io/etcd-development/etcd:v3.2.10
+
+etcd2:
+  defines: runnable
+  inherits: ./etcd-common
+  variables:
+    monk_etcd_name:
+      env: ETCD_NAME
+      type: string
+      value: etcd2
+    monk_etcd_initial_advertise_peer_urls:
+      env: ETCD_INITIAL_ADVERTISE_PEER_URLS
+      type: string
+      value: <- `http://${monk_etcd2_host}:2380`
+    monk_etcd_listen_peer_urls:
+      env: ETCD_LISTEN_PEER_URLS
+      type: string
+      value: <- `http://0.0.0.0:2380`
+    monk_etcd_listen_client_urls:
+      env: ETCD_LISTEN_CLIENT_URLS
+      type: string
+      value: <- `http://0.0.0.0:2379`
+    monk_etcd_advertise_client_urls:
+      env: ETCD_ADVERTISE_CLIENT_URLS
+      type: string
+      value: <- `http://${monk_etcd2_host}:2379`
+  containers:
+    monk-etcd2:
+      ports:
+        - <- `0.0.0.0:${monk_etcd2_port}:2379`
+      image: gcr.io/etcd-development/etcd:v3.2.10
+
+etcd3:
+  defines: runnable
+  inherits: ./etcd-common
+  variables:
+    monk_etcd_name:
+      env: ETCD_NAME
+      type: string
+      value: etcd3
+    monk_etcd_initial_advertise_peer_urls:
+      env: ETCD_INITIAL_ADVERTISE_PEER_URLS
+      type: string
+      value: <- `http://${monk_etcd3_host}:2380`
+    monk_etcd_listen_peer_urls:
+      env: ETCD_LISTEN_PEER_URLS
+      type: string
+      value: <- `http://0.0.0.0:2380`
+    monk_etcd_listen_client_urls:
+      env: ETCD_LISTEN_CLIENT_URLS
+      type: string
+      value: <- `http://0.0.0.0:2379`
+    monk_etcd_advertise_client_urls:
+      env: ETCD_ADVERTISE_CLIENT_URLS
+      type: string
+      value: <- `http://${monk_etcd3_host}:2379`
+  containers:
+    monk-etcd3:
+      ports:
+        - <- `0.0.0.0:${monk_etcd3_port}:2379`
+      image: gcr.io/etcd-development/etcd:v3.2.10
+      
