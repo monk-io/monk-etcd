@@ -42,9 +42,7 @@ etcd-common:
       env: ETCD_INITIAL_CLUSTER_TOKEN
       type: string
       value: etcd-cluster-1
-    volume_local:
-      type: string
-      value: <- `${monk-volume-path}/monk-hadoop`
+
 
 etcd1:
   defines: runnable
