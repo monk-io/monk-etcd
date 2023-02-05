@@ -1,4 +1,4 @@
-namespace: monk-etcd 
+namespace: etcd
 
 
 etcd-common:
@@ -9,27 +9,33 @@ etcd-common:
     website: https://etcd.io/
     publisher: monk.io
     icon: logo.png 
+  connections:
+    etcd1:
+      runnable: etcd/etcd1
+      service: etcd-svc
+    etcd2:
+      runnable: etcd/etcd2
+      service: etcd-svc
+    etcd3:
+      runnable: etcd/etcd3
+      service: etcd-svc
   variables:
     monk_ectd_ctl_api:
       env: ETCDCTL_API
       type: int
       value: 3
-    monk_etcd_debug:
-      env: ETCD_DEBUG
-      type: bool
-      value: 1
     monk_etcd1_host:
       env: ETCD1_HOST
       type: string
-      value: <- get-hostname("monk-etcd/etcd1", "monk-etcd1") split(".dns.podman") join("")
+      value: <- connection-hostname("etcd1") split(".dns.podman") join("")
     monk_etcd2_host:
       env: ETCD2_HOST
       type: string
-      value: <- get-hostname("monk-etcd/etcd2", "monk-etcd2") split(".dns.podman") join("")
+      value: <- connection-hostname("etcd2") split(".dns.podman") join("")
     monk_etcd3_host:
       env: ETCD3_HOST
       type: string
-      value: <- get-hostname("monk-etcd/etcd3", "monk-etcd3") split(".dns.podman") join("")
+      value: <- connection-hostname("etcd3") split(".dns.podman") join("")
     monk_etcd_initial_cluster:
       env: ETCD_INITIAL_CLUSTER
       type: string
@@ -42,7 +48,19 @@ etcd-common:
       env: ETCD_INITIAL_CLUSTER_TOKEN
       type: string
       value: etcd-cluster-1
-
+    image-tag: 
+      value: v3.2.10
+      type: string
+  services:
+    etcd-svc:
+      container: etcd
+      protocol: tcp
+      port: 2380
+    etcd-client-svc:
+      container: etcd
+      protocol: tcp
+      port: 2379
+    
 
 etcd1:
   defines: runnable
@@ -69,10 +87,11 @@ etcd1:
       type: string
       value: <- `http://${monk_etcd1_host}:2379`
   containers:
-    monk-etcd1:
+    etcd:
       ports:
-        - <- `0.0.0.0:${monk_etcd1_port}:2379`
-      image: gcr.io/etcd-development/etcd:v3.2.10
+        - <- `${monk_etcd1_port}:2379`
+      image: gcr.io/etcd-development/etcd
+      image-tag: <- `${image-tag}`
 
 etcd2:
   defines: runnable
@@ -99,10 +118,11 @@ etcd2:
       type: string
       value: <- `http://${monk_etcd2_host}:2379`
   containers:
-    monk-etcd2:
+    etcd:
       ports:
-        - <- `0.0.0.0:${monk_etcd2_port}:2379`
-      image: gcr.io/etcd-development/etcd:v3.2.10
+        - <- `${monk_etcd2_port}:2379`
+      image: gcr.io/etcd-development/etcd
+      image-tag: <- `${image-tag}`
 
 etcd3:
   defines: runnable
@@ -129,8 +149,10 @@ etcd3:
       type: string
       value: <- `http://${monk_etcd3_host}:2379`
   containers:
-    monk-etcd3:
+    etcd:
       ports:
-        - <- `0.0.0.0:${monk_etcd3_port}:2379`
-      image: gcr.io/etcd-development/etcd:v3.2.10
+        - <- `${monk_etcd3_port}:2379`
+      image: gcr.io/etcd-development/etcd
+      image-tag: <- `${image-tag}`
+      
       

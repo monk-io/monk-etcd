@@ -1,11 +1,11 @@
-namespace: monk-etcd
+namespace: etcd
 
 stack:
   defines: process-group
   runnable-list:
-    - monk-etcd/etcd1
-    - monk-etcd/etcd2
-    - monk-etcd/etcd3
+    - etcd/etcd1
+    - etcd/etcd2
+    - etcd/etcd3
   variables:
     monk_etcd1_port:
       type: int
@@ -16,3 +16,7 @@ stack:
     monk_etcd3_port:
       type: int
       value: 2393
+    monk_etcd_debug:
+      env: ETCD_DEBUG
+      type: bool
+      value: false
