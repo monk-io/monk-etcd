@@ -27,15 +27,15 @@ etcd-common:
     monk_etcd1_host:
       env: ETCD1_HOST
       type: string
-      value: <- connection-hostname("etcd1") split(".dns.podman") join("")
+      value: <- connection-hostname("etcd1")
     monk_etcd2_host:
       env: ETCD2_HOST
       type: string
-      value: <- connection-hostname("etcd2") split(".dns.podman") join("")
+      value: <- connection-hostname("etcd2")
     monk_etcd3_host:
       env: ETCD3_HOST
       type: string
-      value: <- connection-hostname("etcd3") split(".dns.podman") join("")
+      value: <- connection-hostname("etcd3")
     monk_etcd_initial_cluster:
       env: ETCD_INITIAL_CLUSTER
       type: string
@@ -49,7 +49,7 @@ etcd-common:
       type: string
       value: etcd-cluster-1
     image-tag: 
-      value: v3.2.10
+      value: latest
       type: string
   services:
     etcd-svc:
@@ -64,7 +64,7 @@ etcd-common:
 
 etcd1:
   defines: runnable
-  inherits: ./etcd-common
+  inherits: etcd/etcd-common
   variables:
     monk_etcd_name:
       env: ETCD_NAME
@@ -90,12 +90,12 @@ etcd1:
     etcd:
       ports:
         - <- `${monk_etcd1_port}:2379`
-      image: gcr.io/etcd-development/etcd
+      image: quay.io/coreos/etcd
       image-tag: <- `${image-tag}`
 
 etcd2:
   defines: runnable
-  inherits: ./etcd-common
+  inherits: etcd/etcd-common
   variables:
     monk_etcd_name:
       env: ETCD_NAME
@@ -121,12 +121,12 @@ etcd2:
     etcd:
       ports:
         - <- `${monk_etcd2_port}:2379`
-      image: gcr.io/etcd-development/etcd
+      image: quay.io/coreos/etcd
       image-tag: <- `${image-tag}`
 
 etcd3:
   defines: runnable
-  inherits: ./etcd-common
+  inherits: etcd/etcd-common
   variables:
     monk_etcd_name:
       env: ETCD_NAME
@@ -152,7 +152,7 @@ etcd3:
     etcd:
       ports:
         - <- `${monk_etcd3_port}:2379`
-      image: gcr.io/etcd-development/etcd
+      image: quay.io/coreos/etcd
       image-tag: <- `${image-tag}`
       
       
