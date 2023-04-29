@@ -1,13 +1,16 @@
 # ETCD & Monk
+
 This repository contains Monk.io template to deploy Minio Cluster either locally or on cloud of your choice (AWS, GCP, Azure, Digital Ocean).
 
-# Prerequisites
+## Prerequisites
+
 - [Install Monk](https://docs.monk.io/docs/get-monk)
 - [Register and Login Monk](https://docs.monk.io/docs/acc-and-auth)
 - [Add Cloud Provider](https://docs.monk.io/docs/cloud-provider)
 - [Add Instance](https://docs.monk.io/docs/multi-cloud)
 
-#### Make sure monkd is running.
+## Make sure monkd is running
+
 ```bash
 foo@bar:~$ monk status
 daemon: ready
@@ -16,18 +19,18 @@ not connected to cluster
 ```
 
 ## Clone Repository
+
 ```bash
 git clone https://github.com/Burakhan/etcd
 ```
 
 ## Load Template
+
 ```bash
 cd etcd
 monk load MANIFEST
 ```
 
-
-#### Let's take a look at the themes I have installed.
 ```bash
 foo@bar:~$ monk list etcd
 ✔ Got the list
@@ -40,6 +43,7 @@ group     etcd/stack  local       -        -
 ```
 
 ## Deploy Stack
+
 ```bash
 foo@bar:~$ monk run etcd/stack
 ✔ Starting the job: local/etcd/stack... DONE
@@ -71,23 +75,22 @@ foo@bar:~$ monk run etcd/stack
           └─🔌 open 13.50.109.173:2393 (0.0.0.0:2393) -> 2379
 
 💡 You can inspect and manage your above stack with these commands:
-	monk logs (-f) local/etcd/stack - Inspect logs
-	monk shell     local/etcd/stack - Connect to the container's shell
-	monk do        local/etcd/stack/action_name - Run defined action (if exists)
+ monk logs (-f) local/etcd/stack - Inspect logs
+ monk shell     local/etcd/stack - Connect to the container's shell
+ monk do        local/etcd/stack/action_name - Run defined action (if exists)
 💡 Check monk help for more!
 ```
 
-
 ## Variables
+
 The variables are in `stack.yml` file. You can quickly setup by editing the values here.
 
 | Variable        | Description             | Default |
-|-----------------|-------------------------|---------|
+| --------------- | ----------------------- | ------- |
 | monk_etcd1_port | etcd node 1 public port | 2391    |
 | monk_etcd2_port | etcd node 2 public port | 2392    |
 | monk_etcd3_port | etcd node 3 public port | 2393    |
 | monk_etcd_debug | etcd debug mode         | 1       |
-
 
 ## Stop, remove and clean up workloads and templates
 
