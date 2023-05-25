@@ -19,7 +19,7 @@ etcd-common:
     publisher: monk.io
     source: https://github.com/etcd-io/etcd
     icon: https://github.com/etcd-io/etcd/raw/main/logos/etcd-horizontal-color.svg
-    tags: Distributed systems, Key-value store, Service discovery, Configuration management, Coordination, Cloud-native, Microservices, Open source, High availability, Reliability, Scalability, Performance, Security
+    tags: reliability, high availability, microservices, configuration management, scalability, service discovery, key-value store, security, coordination, performance, open source
     private: true
   connections:
     etcd1:
