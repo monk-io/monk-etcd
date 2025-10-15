@@ -1,0 +1,177 @@
+---
+title: etcd
+description: Ready-to-run etcd container cluster you can run directly or inherit to integrate a distributed key-value store into your infrastructure.
+primary_category: infrastructure
+tags: [etcd, key-value, distributed, template, runnable, cluster, configuration, consensus]
+integration_type: template
+hosting_models: [self-hosted]
+website_url: https://etcd.io/
+docs_url: https://etcd.io/docs/
+publisher: monk.io
+---
+
+## Overview
+
+This template provides a production‑ready etcd cluster as a Monk runnable. You can:
+
+- Run it directly to get a managed etcd 3-node cluster with sensible defaults
+- Inherit it in your own runnable to seamlessly add a distributed key-value store to your infrastructure
+
+etcd is a strongly consistent, distributed key-value store that provides a reliable way to store data that needs to be accessed by a distributed system or cluster of machines. It is used by Kubernetes and many other distributed systems for configuration management, service discovery, and coordinating distributed work.
+
+## What this template manages
+
+- 3-node etcd cluster (high availability)
+- Network services on configurable ports
+- Persistent volumes for data storage
+- Cluster coordination and consensus using Raft algorithm
+
+## Quick start (run directly)
+
+1) Load templates
+
+```bash
+monk load MANIFEST
+```
+
+2) Run etcd cluster with defaults
+
+```bash
+monk run etcd/stack
+```
+
+3) Customize configuration (recommended via inheritance)
+
+Running directly uses the defaults defined in this template's `variables`. For production deployments, we recommend inheriting the template and customizing variables as shown in the next section.
+
+Once started, the etcd cluster will be available on the configured ports (default: 2391, 2392, 2393).
+
+## Configuration
+
+Key variables you can customize in this template (in `stack.yml`):
+
+```yaml
+variables:
+  monk_etcd1_port: "2391"    # etcd node 1 client port
+  monk_etcd2_port: "2392"    # etcd node 2 client port
+  monk_etcd3_port: "2393"    # etcd node 3 client port
+  monk_etcd_debug: "1"       # etcd debug mode (set to "0" for production)
+```
+
+Data is persisted under `${monk-volume-path}/etcd` on each node. Internal cluster communication uses port `2380` for peer-to-peer connectivity.
+
+## Stack components
+
+The etcd stack includes the following runnables:
+
+- `etcd/etcd1` - First etcd cluster node (client port 2391, peer port 2380)
+- `etcd/etcd2` - Second etcd cluster node (client port 2392, peer port 2380)
+- `etcd/etcd3` - Third etcd cluster node (client port 2393, peer port 2380)
+
+## Use by inheritance (recommended for apps)
+
+Inherit the etcd cluster in your application and declare a connection. Example:
+
+```yaml
+namespace: myapp
+kvstore:
+  defines: runnable
+  inherits: etcd/stack
+  variables:
+    monk_etcd_debug: "0"       # disable debug in production
+    monk_etcd1_port: "2379"    # use standard etcd port
+app:
+  defines: runnable
+  containers:
+    service:
+      image: myorg/app
+      environment:
+        - ETCD_ENDPOINTS=<- connection-hostname("etcd") concat ":2379"
+  connections:
+    etcd:
+      runnable: kvstore
+      service: etcd1
+```
+
+Then run your application group:
+
+```bash
+monk run myapp/app
+```
+
+## Ports and connectivity
+
+- **Client Communication:**
+  - etcd node 1: TCP port `2391` (configurable via `monk_etcd1_port`)
+  - etcd node 2: TCP port `2392` (configurable via `monk_etcd2_port`)
+  - etcd node 3: TCP port `2393` (configurable via `monk_etcd3_port`)
+- **Cluster Communication:**
+  - Internal peer-to-peer: TCP port `2380` (fixed)
+- From other runnables in the same process group, use `connection-hostname("<connection-name>")` to resolve the etcd cluster endpoint.
+
+## Persistence and data storage
+
+- Data path: `${monk-volume-path}/etcd-X:/etcd-data` (where X is 1, 2, or 3 for each node)
+- Each node maintains its own data directory for the Raft log and snapshots
+- Data persists across container restarts
+- Ensure sufficient disk space for your use case (etcd stores all data in memory and on disk)
+
+## Features
+
+- **Distributed Consensus**: Uses Raft consensus algorithm for strong consistency
+- **High Availability**: 3-node cluster tolerates one node failure
+- **Watch API**: Monitor key changes in real-time
+- **TTL Keys**: Automatic key expiration
+- **Secure**: TLS client cert authentication and RBAC support
+- **Fast**: Benchmark up to 10,000 writes per second
+- **Transactional**: Multi-key transactions with if/then/else semantics
+
+## Use cases
+
+etcd is ideal for:
+- **Service discovery and configuration**: Store service endpoints and app config
+- **Distributed locking**: Coordinate access to shared resources
+- **Leader election**: Ensure only one leader in distributed systems
+- **Cluster coordination**: Synchronize distributed workloads
+- **Configuration management**: Used by Kubernetes for cluster state
+- **Metadata storage**: Store cluster and application metadata
+
+## Related templates
+
+- See other templates in this repository for complementary services
+- Combine with monitoring tools (`prometheus-grafana/`) for observability
+- Integrate with your application stack for service discovery and configuration
+- Use with container orchestration systems for state management
+
+## Troubleshooting
+
+- **Cluster won't form**: Ensure all three nodes can communicate on port 2380. Check firewall rules and network connectivity.
+- **Port conflicts**: Verify that ports 2391, 2392, 2393, and 2380 are not in use by other services.
+- **Performance issues**: Disable debug mode (`monk_etcd_debug: "0"`) and ensure sufficient disk I/O performance.
+- **Split brain**: etcd requires a quorum (2 out of 3 nodes). If two nodes fail, the cluster becomes read-only.
+
+Check logs:
+
+```bash
+monk logs -l 500 -f etcd/stack
+monk logs -l 500 -f etcd/etcd1
+monk logs -l 500 -f etcd/etcd2
+monk logs -l 500 -f etcd/etcd3
+```
+
+Verify cluster health:
+
+```bash
+monk shell etcd/etcd1
+etcdctl cluster-health
+etcdctl member list
+```
+
+Access etcd data:
+
+```bash
+monk shell etcd/etcd1
+etcdctl put mykey "Hello etcd"
+etcdctl get mykey
+```
+
